@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picture Description Activity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        stoneBg: '#f5f5f4', // Soft stone background
+                        cardWhite: '#ffffff',
+                        sageGreen: '#8fbc8f', // Soft sage green for buttons and focus
+                        sageGreenHover: '#7ea97e', // Slightly darker for hover states
+                        textDark: '#374151',
+                        textMuted: '#6b7280',
+                        borderSoft: '#d1d5db',
+                        feedbackSuccess: '#5e875e' // Darker sage for readable text feedback
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: theme('colors.stoneBg');
+            color: theme('colors.textDark');
+        }
+        
+        .fade-transition {
+            transition: opacity 0.6s ease-in-out;
+        }
+
+        /* Accessible, large select styles tailored for a single-line flow */
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.2em;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: theme('colors.sageGreen');
+            box-shadow: 0 0 0 3px rgba(143, 188, 143, 0.4);
+        }
+
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(143, 188, 143, 0.4);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Image constraints as requested for full visibility */
+        .image-container {
+            width: 100%;
+            height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: theme('colors.cardWhite');
+            margin-bottom: 2rem;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-8 px-4 sm:px-6 md:justify-center">
+
+    <!-- Main Activity Card -->
+    <main id="main-card" class="w-full max-w-6xl bg-cardWhite rounded-2xl shadow-sm border border-borderSoft p-6 sm:p-10 fade-transition opacity-100">
+        
+        <div id="activity-content" class="fade-transition opacity-100">
+            <div class="text-center mb-6">
+                <h1 class="text-2xl text-textMuted font-medium">Picture <span id="level-indicator">1</span> of 15</h1>
+            </div>
+
+            <!-- Image Container -->
+            <div class="image-container bg-stoneBg/30">
+                <img id="activity-image" src="1.jpg" alt="Activity picture">
+            </div>
+
+            <!-- Selects Container: Using flex-row and flex-wrap to put them in one line -->
+            <div class="w-full flex flex-row flex-wrap justify-center items-center gap-3 mb-8" id="select-container">
+                <select id="sel-0" class="flex-1 min-w-[200px] bg-stoneBg border-2 border-borderSoft rounded-xl py-3 pl-4 pr-10 text-xl font-medium text-textDark cursor-pointer transition-colors" aria-label="Sentence part 1"></select>
+                <select id="sel-1" class="flex-1 min-w-[160px] bg-stoneBg border-2 border-borderSoft rounded-xl py-3 pl-4 pr-10 text-xl font-medium text-textDark cursor-pointer transition-colors" aria-label="Sentence part 2"></select>
+                <select id="sel-2" class="flex-1 min-w-[140px] bg-stoneBg border-2 border-borderSoft rounded-xl py-3 pl-4 pr-10 text-xl font-medium text-textDark cursor-pointer transition-colors" aria-label="Sentence part 3"></select>
+                <select id="sel-3" class="flex-1 min-w-[180px] bg-stoneBg border-2 border-borderSoft rounded-xl py-3 pl-4 pr-10 text-xl font-medium text-textDark cursor-pointer transition-colors" aria-label="Sentence part 4"></select>
+            </div>
+
+            <!-- Feedback and Action Area -->
+            <div class="flex flex-col items-center min-h-[140px]">
+                <div class="flex gap-4">
+                    <button id="check-btn" onclick="checkAnswer()" class="bg-sageGreen hover:bg-sageGreenHover text-cardWhite text-2xl font-medium py-4 px-12 rounded-xl transition-colors duration-300 block shadow-sm">
+                        Check Answer
+                    </button>
+                    <button id="next-btn" onclick="nextLevel()" class="hidden bg-sageGreen hover:bg-sageGreenHover text-cardWhite text-2xl font-medium py-4 px-12 rounded-xl transition-colors duration-300 shadow-sm">
+                        Next Picture
+                    </button>
+                </div>
+                <p id="feedback-text" class="mt-8 text-2xl font-medium text-center fade-transition opacity-0 min-h-[2.5rem]"></p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Completion Screen -->
+    <section id="completion-screen" class="hidden w-full max-w-2xl bg-cardWhite rounded-2xl shadow-sm border border-borderSoft p-12 text-center fade-transition opacity-0 mt-4">
+        <h2 class="text-4xl font-medium text-textDark mb-6">Activity Complete!</h2>
+        <p class="text-2xl text-textMuted mb-10">You have successfully finished all 15 pictures. Excellent work.</p>
+        <button onclick="startOver()" class="bg-sageGreen hover:bg-sageGreenHover text-cardWhite text-2xl font-medium py-4 px-12 rounded-xl transition-colors duration-300 shadow-sm">
+            Start Over
+        </button>
+    </section>
+
+    <script>
+        // Data for all 15 levels with 4 sentence parts and logical distractors
+        const activityData = [
+            { 
+                image: '1.jpg', 
+                options: [
+                    ['--', 'The brown dog', 'The orange cat', 'The grey bird'],
+                    ['--', 'is jumping', 'is sleeping', 'is eating'],
+                    ['--', 'on the', 'under the', 'next to the'],
+                    ['--', 'hard floor.', 'green grass.', 'soft blanket.']
+                ], 
+                answer: ['The orange cat', 'is sleeping', 'on the', 'soft blanket.'] 
+            },
+            { 
+                image: '2.jpg', 
+                options: [
+                    ['--', 'The white rabbit', 'The brown dog', 'The black horse'],
+                    ['--', 'is sitting', 'is swimming', 'is running'],
+                    ['--', 'on the', 'behind the', 'in the'],
+                    ['--', 'wet sand.', 'green grass.', 'blue rug.']
+                ], 
+                answer: ['The brown dog', 'is sitting', 'on the', 'green grass.'] 
+            },
+            { 
+                image: '3.jpg', 
+                options: [
+                    ['--', 'The red truck', 'The blue bus', 'The grey car'],
+                    ['--', 'is speeding', 'is parked', 'is driving'],
+                    ['--', 'in the', 'above the', 'over the'],
+                    ['--', 'driveway.', 'highway.', 'garage.']
+                ], 
+                answer: ['The grey car', 'is parked', 'in the', 'driveway.'] 
+            },
+            { 
+                image: '4.jpg', 
+                options: [
+                    ['--', 'The yellow banana', 'The red apple', 'The green pear'],
+                    ['--', 'is rolling', 'is resting', 'is falling'],
+                    ['--', 'on the', 'under the', 'inside the'],
+                    ['--', 'plastic chair.', 'metal shelf.', 'wooden table.']
+                ], 
+                answer: ['The red apple', 'is resting', 'on the', 'wooden table.'] 
+            },
+            { 
+                image: '5.jpg', 
+                options: [
+                    ['--', 'The yellow bird', 'The black bat', 'The silver plane'],
+                    ['--', 'is walking', 'is flying', 'is sleeping'],
+                    ['--', 'in the', 'under the', 'next to the'],
+                    ['--', 'green tree.', 'blue sky.', 'white cloud.']
+                ], 
+                answer: ['The yellow bird', 'is flying', 'in the', 'blue sky.'] 
+            },
+            { 
+                image: '6.jpg', 
+                options: [
+                    ['--', 'The white cup', 'The glass bowl', 'The red plate'],
+                    ['--', 'is empty', 'is broken', 'is filled'],
+                    ['--', 'with', 'by', 'on'],
+                    ['--', 'cold water.', 'warm tea.', 'orange juice.']
+                ], 
+                answer: ['The white cup', 'is filled', 'with', 'warm tea.'] 
+            },
+            { 
+                image: '7.jpg', 
+                options: [
+                    ['--', 'The closed box', 'The open book', 'The flat paper'],
+                    ['--', 'is standing', 'is lying', 'is falling'],
+                    ['--', 'on the', 'under the', 'behind the'],
+                    ['--', 'soft bed.', 'wooden desk.', 'floor.']
+                ], 
+                answer: ['The open book', 'is lying', 'on the', 'wooden desk.'] 
+            },
+            { 
+                image: '8.jpg', 
+                options: [
+                    ['--', 'The brown tree', 'The green plant', 'The yellow flower'],
+                    ['--', 'is growing', 'is wilting', 'is drying'],
+                    ['--', 'by the', 'under the', 'inside the'],
+                    ['--', 'dark closet.', 'sunny window.', 'cold door.']
+                ], 
+                answer: ['The green plant', 'is growing', 'by the', 'sunny window.'] 
+            },
+            { 
+                image: '9.jpg', 
+                options: [
+                    ['--', 'The blue train', 'The red car', 'The yellow bus'],
+                    ['--', 'is stopping', 'is traveling', 'is parking'],
+                    ['--', 'on the', 'over the', 'under the'],
+                    ['--', 'dirty road.', 'wet river.', 'metal tracks.']
+                ], 
+                answer: ['The blue train', 'is traveling', 'on the', 'metal tracks.'] 
+            },
+            { 
+                image: '10.jpg', 
+                options: [
+                    ['--', 'The square picture', 'The round clock', 'The tall mirror'],
+                    ['--', 'is hanging', 'is falling', 'is resting'],
+                    ['--', 'on the', 'in the', 'under the'],
+                    ['--', 'wooden floor.', 'brown ceiling.', 'white wall.']
+                ], 
+                answer: ['The round clock', 'is hanging', 'on the', 'white wall.'] 
+            },
+            { 
+                image: '11.jpg', 
+                options: [
+                    ['--', 'The glass bottle', 'The plastic cup', 'The metal can'],
+                    ['--', 'is empty', 'is filled', 'is pouring'],
+                    ['--', 'with', 'by', 'on'],
+                    ['--', 'clear water.', 'brown mud.', 'red juice.']
+                ], 
+                answer: ['The glass bottle', 'is filled', 'with', 'clear water.'] 
+            },
+            { 
+                image: '12.jpg', 
+                options: [
+                    ['--', 'The white socks', 'The black shoes', 'The blue boots'],
+                    ['--', 'are thrown', 'are hidden', 'are placed'],
+                    ['--', 'by the', 'above the', 'inside the'],
+                    ['--', 'back window.', 'front door.', 'long hallway.']
+                ], 
+                answer: ['The black shoes', 'are placed', 'by the', 'front door.'] 
+            },
+            { 
+                image: '13.jpg', 
+                options: [
+                    ['--', 'The white bird', 'The silver airplane', 'The grey helicopter'],
+                    ['--', 'is landing', 'is parking', 'is flying'],
+                    ['--', 'high in the', 'low on the', 'under the'],
+                    ['--', 'water.', 'air.', 'ground.']
+                ], 
+                answer: ['The silver airplane', 'is flying', 'high in the', 'air.'] 
+            },
+            { 
+                image: '14.jpg', 
+                options: [
+                    ['--', 'The plastic stool', 'The metal bench', 'The wooden chair'],
+                    ['--', 'is standing', 'is breaking', 'is folding'],
+                    ['--', 'next to the', 'far from the', 'under the'],
+                    ['--', 'table.', 'bed.', 'window.']
+                ], 
+                answer: ['The wooden chair', 'is standing', 'next to the', 'table.'] 
+            },
+            { 
+                image: '15.jpg', 
+                options: [
+                    ['--', 'The dark shadows', 'The fluffy clouds', 'The bright stars'],
+                    ['--', 'are stopping', 'are moving', 'are falling'],
+                    ['--', 'across the', 'under the', 'below the'],
+                    ['--', 'ground.', 'sky.', 'ocean.']
+                ], 
+                answer: ['The fluffy clouds', 'are moving', 'across the', 'sky.'] 
+            }
+        ];
+
+        let currentIndex = 0;
+        
+        const dom = {
+            mainCard: document.getElementById('main-card'),
+            content: document.getElementById('activity-content'),
+            indicator: document.getElementById('level-indicator'),
+            image: document.getElementById('activity-image'),
+            selects: [
+                document.getElementById('sel-0'),
+                document.getElementById('sel-1'),
+                document.getElementById('sel-2'),
+                document.getElementById('sel-3')
+            ],
+            btnCheck: document.getElementById('check-btn'),
+            btnNext: document.getElementById('next-btn'),
+            feedback: document.getElementById('feedback-text'),
+            completion: document.getElementById('completion-screen')
+        };
+
+        function loadLevel() {
+            const levelData = activityData[currentIndex];
+            
+            // Softly fade out old content
+            dom.content.classList.remove('opacity-100');
+            dom.content.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                // Update UI elements while invisible
+                dom.indicator.textContent = currentIndex + 1;
+                dom.image.src = levelData.image;
+
+                // Populate selects with current level data
+                for (let i = 0; i < 4; i++) {
+                    const selectEl = dom.selects[i];
+                    selectEl.innerHTML = ''; 
+                    selectEl.disabled = false;
+                    
+                    const optionsArray = levelData.options[i];
+                    optionsArray.forEach((optText, index) => {
+                        const option = document.createElement('option');
+                        option.value = index === 0 ? "" : optText; 
+                        option.textContent = optText;
+                        if (index === 0) {
+                            option.disabled = true;
+                            option.selected = true;
+                        }
+                        selectEl.appendChild(option);
+                    });
+                }
+
+                // Reset buttons and feedback
+                dom.btnCheck.style.display = 'block';
+                dom.btnCheck.disabled = false;
+                dom.btnNext.style.display = 'none';
+                
+                dom.feedback.textContent = '';
+                dom.feedback.classList.remove('opacity-100');
+                dom.feedback.classList.add('opacity-0');
+
+                // Fade content back in gently
+                dom.content.classList.remove('opacity-0');
+                dom.content.classList.add('opacity-100');
+            }, 600); // Wait for fade out to complete
+        }
+
+        function checkAnswer() {
+            const levelData = activityData[currentIndex];
+            let allAnswered = true;
+            let isCorrect = true;
+
+            for (let i = 0; i < 4; i++) {
+                const val = dom.selects[i].value;
+                if (!val) {
+                    allAnswered = false;
+                    break;
+                }
+                if (val !== levelData.answer[i]) {
+                    isCorrect = false;
+                }
+            }
+
+            if (!allAnswered) {
+                showFeedback("Please select an option for every box.", false);
+                return;
+            }
+
+            if (isCorrect) {
+                showFeedback("Correct! Very good.", true);
+                
+                // Switch buttons to allow pacing by the user
+                dom.btnCheck.style.display = 'none';
+                dom.btnNext.style.display = 'block';
+                
+                // Lock selects so answer remains visible and static
+                dom.selects.forEach(s => s.disabled = true);
+            } else {
+                showFeedback("Not quite right. Please try again.", false);
+            }
+        }
+
+        function showFeedback(message, isSuccess) {
+            dom.feedback.textContent = message;
+            
+            // Set calm, readable colors based on result
+            if (isSuccess) {
+                dom.feedback.style.color = '#5e875e'; // Darker sage green
+            } else {
+                dom.feedback.style.color = '#374151'; // Neutral dark grey
+            }
+            
+            dom.feedback.classList.remove('opacity-0');
+            dom.feedback.classList.add('opacity-100');
+        }
+
+        function nextLevel() {
+            currentIndex++;
+            if (currentIndex < activityData.length) {
+                loadLevel();
+            } else {
+                // Show completion screen
+                dom.mainCard.classList.remove('opacity-100');
+                dom.mainCard.classList.add('opacity-0');
+                
+                setTimeout(() => {
+                    dom.mainCard.style.display = 'none';
+                    dom.completion.classList.remove('hidden');
+                    
+                    // Trigger reflow to ensure transition animation plays
+                    void dom.completion.offsetWidth;
+                    
+                    dom.completion.classList.remove('opacity-0');
+                    dom.completion.classList.add('opacity-100');
+                }, 600);
+            }
+        }
+
+        function startOver() {
+            dom.completion.classList.remove('opacity-100');
+            dom.completion.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                dom.completion.classList.add('hidden');
+                currentIndex = 0;
+                dom.mainCard.style.display = 'block';
+                loadLevel();
+                
+                setTimeout(() => {
+                    dom.mainCard.classList.remove('opacity-0');
+                    dom.mainCard.classList.add('opacity-100');
+                }, 50);
+            }, 600);
+        }
+
+        // Start the activity automatically when the page loads
+        window.onload = () => {
+            loadLevel();
+        };
+    </script>
+</body>
+</html>
